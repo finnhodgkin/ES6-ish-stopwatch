@@ -1,32 +1,32 @@
 function Stopwatch () {
   let start = 0;
   let stop = 0;
+  const timeDifference = (s, e) => e - s;
+  const toReadableTime = (time) => new Date(time).toISOString().substr(-13, 12);
+  this.getTime = () => toReadableTime(timeDifference(start, stop));
   this.setStart = (time) => {
-    const withStop = stop ? time - this.timeDifference(start, stop) : time;
+    const withStop = stop ? time - timeDifference(start, stop) : time;
     start = start ? withStop : time;
   };
   this.setStop = (time) => {
     stop = time;
   };
-  this.timeDifference = (s, e) => e - s;
-  this.toReadableTime = (time) => new Date(time).toISOString().substr(-13, 12);
-  this.getTime = () => this.toReadableTime(this.timeDifference(start, stop));
 }
 
 function StopwatchControls (stopwatch, element) {
   let timer = null;
+  const update = () => element.innerText = stopwatch.getTime();
+  const run = (time) => {
+    stopwatch.setStop(time);
+    update();
+  };
+  const frame = () => {
+    run(Date.now());
+    timer = window.requestAnimationFrame(frame);
+  };
   this.start = () => {
     stopwatch.setStart(Date.now());
-    this.frame();
-  };
-  this.run = (time) => {
-    stopwatch.setStop(time);
-    this.update();
-  };
-  this.update = () => element.innerText = stopwatch.getTime();
-  this.frame = () => {
-    this.run(Date.now());
-    timer = window.requestAnimationFrame(this.frame);
+    frame();
   };
   this.stop = () => {
     window.cancelAnimationFrame(timer);
@@ -35,7 +35,7 @@ function StopwatchControls (stopwatch, element) {
     window.cancelAnimationFrame(timer);
     stopwatch.setStop(0);
     stopwatch.setStart(0);
-    this.update();
+    update();
   };
 }
 
@@ -47,7 +47,7 @@ function listeners (groupName) {
   const stop = get(groupName + '-stop');
   const reset = get(groupName + '-reset');
   const display = get(groupName + '-display');
-  const ctrl = new StopwatchControls(new Stopwatch, display);
+  const ctrl = new StopwatchControls(new Stopwatch(), display);
 
   start.addEventListener('click', ctrl.start);
   stop.addEventListener('click', ctrl.stop);
