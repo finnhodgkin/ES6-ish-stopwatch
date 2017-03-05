@@ -4,7 +4,8 @@ function Stopwatch () {
   const timeDifference = (s, e) => e - s;
   const toReadableTime = (time) => new Date(time).toISOString().substr(-13, 12);
   this.getTime = () => toReadableTime(timeDifference(start, stop));
-  this.setStart = (time) => {
+  this.setStart = (time, force) => {
+    if (force) { start = time; return; }
     const withStop = stop ? time - timeDifference(start, stop) : time;
     start = start ? withStop : time;
   };
@@ -12,6 +13,15 @@ function Stopwatch () {
     stop = time;
   };
 }
+
+const stpwtch = new Stopwatch();
+stpwtch.setStop(Date.now() + 3599999);
+
+setInterval(function() {
+  stpwtch.setStart(Date.now(), true);
+  console.log(stpwtch.getTime());
+}, 10);
+
 
 function StopwatchControls (stopwatch, element) {
   let timer = null;
